@@ -39,15 +39,18 @@ class Devices(Base):
     devices_json = Column(Text, default=None)
     res_json = Column(Text, default=None)
     devices_type = Column(Integer, default=0)
+    formatted_address = Column(String(64), default='')
+    geo_json = Column(Text, default=None)
 
     def __str__(self):
         return "Devices => { \
 id:%d, long:%0.2f, lat:%0.2f, location_time:%d, add_time:%d,  \
 check_time:%d, isOld:%d, isInaccurate:%d, horizontalAccuracy:%0.2f, positionType:'%s',  \
-locationType:'%s', devices_json:'%s', res_json:'%s', devices_type:%d, locationFinished:%d}" % (
+locationType:'%s', devices_json:'%s', res_json:'%s', devices_type:%d," \
+               " locationFinished:%d,formatted_address:%s,geo_json:%s}" % (
 self.id, self.long, self.lat, self.location_time, self.add_time,
 self.check_time, self.isOld, self.isInaccurate, self.horizontalAccuracy, self.positionType,
-self.locationType, self.devices_json, self.res_json, self.devices_type, self.locationFinished)
+self.locationType, self.devices_json, self.res_json, self.devices_type, self.locationFinished,self.formatted_address, self.geo_json)
 
     __repr__ = __str__
 
@@ -72,6 +75,28 @@ def changeposition(long, lat):
         return data['result'][0]['x'], data['result'][0]['y']
     else:
         return 0, 0
+
+def Geocoding(long, lat):
+    """
+    经纬度获取街道信息
+    :param long: 经度
+    :param lat: 维度
+    :return: 地址，json信息
+    """
+    baidu_key = os.environ.get('baidu', '')
+    url = "http://api.map.baidu.com/geocoder/v2/?location=%s,%s&output=json&pois=1&ak=%s"\
+        %(lat, long, baidu_key)
+
+    r = requests.get(url)
+    print("Geocoding url ==> %s" % r.url)
+    print("Geocoding text ==> %s" % r.text)
+    data = r.json()
+    if data['status'] == 0:
+        return data['result']['formatted_address'], json.dumps(data)
+    else:
+        return "", json.dumps(data)
+
+
 
 
 def devices_info_save():
@@ -103,6 +128,7 @@ def devices_info_save():
 
     device = Devices()
     device.long, device.lat = changeposition(location_res['longitude'], location_res['latitude'])
+    device.formatted_address, device.geo_json = Geocoding(device.long, device.lat)
     device.horizontalAccuracy = location_res['horizontalAccuracy']
     device.location_time = int(location_res['timeStamp'] / 1000)
     device.res_json = json.dumps(location_res)
@@ -114,8 +140,9 @@ def devices_info_save():
         device.locationFinished = 1
     else:
         # 如果定位没有结束则休息90秒
-        time.sleep(90)
-        return devices_info_save()
+        pass
+        # time.sleep(90)
+        # return devices_info_save()
 
     if location_res['isOld']:
         device.isOld = 1
