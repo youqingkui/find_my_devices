@@ -88,8 +88,8 @@ def devices_info_save():
 
     try:
         name = os.environ.get('icloud_name', '')
-        passwod = os.environ.get('icloud_password', '')
-        api = PyiCloudService(name, passwod)
+        password = os.environ.get('icloud_password', '')
+        api = PyiCloudService(name, password)
         devices_res = api.devices[0].status()
         location_res = api.devices[0].location()
         print(location_res)
@@ -99,6 +99,7 @@ def devices_info_save():
         print(e)
         print("链接icloud错误")
         return ""
+
 
     device = Devices()
     device.long, device.lat = changeposition(location_res['longitude'], location_res['latitude'])
@@ -111,6 +112,11 @@ def devices_info_save():
 
     if location_res['locationFinished']:
         device.locationFinished = 1
+    else:
+        # 如果定位没有结束则休息90秒
+        time.sleep(90)
+        return devices_info_save()
+
     if location_res['isOld']:
         device.isOld = 1
     if location_res['isInaccurate']:
@@ -140,24 +146,6 @@ def devices_info_save():
 
 devices_info_save()
 
-#
-#
-# devices = Devices()
-# devices.devices_dict = api.devices
-# devices.res = info
-# devices.add_time = int(time.time())
-# devices.check_time = int(time.time())
-# devices.lat = info['longitude']
-# devices.c_lat = info['longitude']
-# devices.long = info['latitude']
-# devices.c_long = info['latitude']
-# devices.positionType = info['positionType']
-# devices.horizontalAccuracy = info['horizontalAccuracy']
-#
-#
-# print(info['horizontalAccuracy'])
-# print(devices.devices_dict)
-# devices.save()
 
 
 
