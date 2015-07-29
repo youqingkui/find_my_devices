@@ -78,6 +78,21 @@ Devices = toshihiko.define 'devices',
       type: T.Type.Integer
       defaultValue: "0"
     }
+    {
+      name: "formatted_address"
+      type: T.Type.String
+      defaultValue: ""
+    }
+    {
+      name: "geo_json"
+      type: T.Type.Json
+      defaultValue: null
+    }
+    {
+      name: "img_src"
+      type: T.Type.String
+      defaultValue: ""
+    }
   ]
 
 module.exports = Devices
