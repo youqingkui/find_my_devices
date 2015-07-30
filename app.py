@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #coding=utf-8
+
 import logging
 from logging.handlers import RotatingFileHandler
 from sqlalchemy import create_engine
@@ -40,6 +41,7 @@ class Devices(Base):
     res_json = Column(Text, default=None)
     devices_type = Column(Integer, default=0)
     formatted_address = Column(String(64), default='')
+    img_src = Column(String(320), default='')
     geo_json = Column(Text, default=None)
 
     def __str__(self):
@@ -47,10 +49,10 @@ class Devices(Base):
 id:%d, long:%0.2f, lat:%0.2f, location_time:%d, add_time:%d,  \
 check_time:%d, isOld:%d, isInaccurate:%d, horizontalAccuracy:%0.2f, positionType:'%s',  \
 locationType:'%s', devices_json:'%s', res_json:'%s', devices_type:%d," \
-               " locationFinished:%d,formatted_address:%s,geo_json:%s}" % (
+               " locationFinished:%d,formatted_address:%s,geo_json:%s,img_src:%s}" % (
 self.id, self.long, self.lat, self.location_time, self.add_time,
 self.check_time, self.isOld, self.isInaccurate, self.horizontalAccuracy, self.positionType,
-self.locationType, self.devices_json, self.res_json, self.devices_type, self.locationFinished,self.formatted_address, self.geo_json)
+self.locationType, self.devices_json, self.res_json, self.devices_type, self.locationFinished,self.formatted_address, self.geo_json, self.img_src)
 
     __repr__ = __str__
 
@@ -96,6 +98,22 @@ def Geocoding(long, lat):
     else:
         return "", json.dumps(data)
 
+def genMapImg(long, lat):
+    """
+    生成百度静态地图URL
+    :param long:
+    :param lat:
+    :return:
+    """
+
+    baidu_key = os.environ.get('baidu', '')
+    long_lat = str(long) + ',' + str(lat)
+    url = "http://api.map.baidu.com/staticimage?width=800&height=700" \
+          "&zoom=16&dpiType=ph&center=%s&markers=%s&ak=%s" \
+          %(long_lat, long_lat, baidu_key)
+    return url
+
+
 
 
 
@@ -129,6 +147,7 @@ def devices_info_save():
     device = Devices()
     device.long, device.lat = changeposition(location_res['longitude'], location_res['latitude'])
     device.formatted_address, device.geo_json = Geocoding(device.long, device.lat)
+    device.img_src = genMapImg(device.long, device.lat)
     device.horizontalAccuracy = location_res['horizontalAccuracy']
     device.location_time = int(location_res['timeStamp'] / 1000)
     device.res_json = json.dumps(location_res)
