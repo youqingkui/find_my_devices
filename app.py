@@ -57,6 +57,11 @@ self.locationType, self.devices_json, self.res_json, self.devices_type, self.loc
     __repr__ = __str__
 
 
+def utc2date(utc):
+    x = time.localtime(utc)
+    t = time.strftime('%Y-%m-%d %H:%M:%S',x)
+    return t
+
 def changeposition(long, lat):
     """
     将得到的坐标转换为百度坐标
@@ -122,8 +127,10 @@ def devices_info_save():
     保存获取到的设备信息
     :return:
     """
-    print("开始执行获取设备信息任务")
-    logging.warn("开始执行获取设备信息任务")
+    check_time = int(time.time())
+    check_date = utc2date(check_time)
+    print("开始执行获取设备信息任务 %s" % check_date)
+    logging.warn("开始执行获取设备信息任务 %s" % check_date)
 
     engine      = create_engine(DB_CONNECT_STRING, echo=False)
     DB_Session  = sessionmaker(bind=engine)
@@ -139,6 +146,7 @@ def devices_info_save():
 
     except Exception, e:
         logging.warn(e)
+        logging.warn("链接icloud异常，%s任务结束\n" % check_date)
         print(e)
         print("链接icloud错误")
         return ""
@@ -152,7 +160,7 @@ def devices_info_save():
     device.location_time = int(location_res['timeStamp'] / 1000)
     device.res_json = json.dumps(location_res)
     device.devices_json = json.dumps(devices_res)
-    device.check_time = int(time.time())
+    device.check_time = check_time
     device.add_time = int(time.time())
 
     if location_res['locationFinished']:
@@ -184,8 +192,8 @@ def devices_info_save():
         if session:
             session.close()
 
-    print("保存设备信息完成")
-    logging.warn("保存设备信息完成")
+    print("保存设备信息完成 %s " % check_date)
+    logging.warn("保存设备信息完成 %s" % check_date )
 
 
 
