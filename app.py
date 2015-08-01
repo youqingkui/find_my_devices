@@ -19,7 +19,7 @@ formatter = logging.Formatter('%(asctime)s|%(name)s|%(threadName)s|%(levelname)s
 Rthandler.setFormatter(formatter)
 logging.getLogger('').addHandler(Rthandler)
 
-DB_CONNECT_STRING = 'mysql://root:@127.0.0.1/find_my'
+DB_CONNECT_STRING = os.environ.get('mysql_url', 'mysql://root:@127.0.0.1/find_my')
 Base = declarative_base()
 
 class Devices(Base):
