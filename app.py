@@ -196,9 +196,8 @@ def devices_info_save():
     logging.warn("保存设备信息完成 %s" % check_date )
 
 
-
-
-devices_info_save()
+if __name__ == '__main__':
+    devices_info_save()
 
 
 
