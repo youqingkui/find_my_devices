@@ -2,7 +2,9 @@
   "name": "application-name",
   "version": "0.0.1",
   "dependencies": {
+    "async": "^1.4.0",
     "evernote": "^1.25.82",
+    "request": "^2.60.0",
     "toshihiko": "^0.3.2"
   }
 }
